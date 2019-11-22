@@ -93,17 +93,15 @@ void producer(void *producer_id1){
         product[i].storage_positon = i;
         product[i].product_id = in;
         product[i].producer_id=producer_id;
-        int use_time=rand()%100*400 + 10000;
+        int use_time=rand()%100*40000 + 1000000;
         usleep(use_time);
         strcpy(product[i].produce_time, getTime());
         printf("生产者%d，产品%d，位置%d， %ds\n", producer_id, product[i].product_id,i, use_time/1000000);
-        // printf("%s 生产者%d在第%d个位置生产了产品%d\n",timenow, producer_id, i+1, in);
         pthread_mutex_unlock(&mutex);
         pthread_cond_signal(&full_sem);
         getTime();
         printf("生产者%d离开缓冲区\n", producer_id);
         printProduct();
-        // sem_post(&full_sem);
         sleep(1);
     }
 }
@@ -128,16 +126,17 @@ void consumer(void* consumer_id1){
             i=findFull();
         }
         if(out==NEED_PRODUCE&&in==NEED_PRODUCE){
+            getTime();
             printf("消费者%d离开缓冲区\n", consumer_id);
+            pthread_cond_signal(&full_sem);
             pthread_mutex_unlock(&mutex);
-            pthread_cond_signal(&empty_sem);
             break;
         }
         printProduct();
         product[i].consumer_id = consumer_id;
         product[i].producer_id = 0;
         out += 1;
-        int use_time=rand()%100*400 + 10000;
+        int use_time=rand()%100*40000 + 1000000;
         usleep(use_time);
         getTime();
         printf("消费者%d，产品%d，位置%d, %ds\n",consumer_id, product[i].product_id,i, use_time/1000000);
